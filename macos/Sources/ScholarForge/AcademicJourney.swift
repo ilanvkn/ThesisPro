@@ -42,7 +42,7 @@ enum AcademicJourney {
     /// A literal passage index, not inferred evidence or automatic scholarly approval.
     static func extract(projectID: String, chapters: [ManuscriptChapter]) -> [JourneyLink] {
         var links: [JourneyLink] = []
-        for (index, chapter) in chapters.enumerated() where !chapter.title.localizedCaseInsensitiveContains("references") {
+        for (index, chapter) in chapters.enumerated() where !["references", "bibliography", "rujukan"].contains(where: { chapter.title.localizedCaseInsensitiveContains($0) }) {
             var heading = chapter.title
             var needsPassage = true
             for raw in chapter.content.components(separatedBy: "\n\n") {

@@ -60,6 +60,7 @@ final class JourneyTests: XCTestCase {
     func testReferencesExcludedAndRoundTrip() throws {
         let chapters = [ManuscriptChapter(title: "References", content: passage, targetWords: 0)]
         XCTAssertTrue(AcademicJourney.extract(projectID: "p", chapters: chapters).isEmpty)
+        XCTAssertTrue(AcademicJourney.extract(projectID: "p", chapters: [.init(title: "Rujukan", content: passage, targetWords: 0)]).isEmpty)
         var link = JourneyLink(id: "a", chapterIndex: 0, chapterTitle: "1", concept: "A", passage: passage)
         link.evidence = "Source, page 3"; link.decision = "Pilot"; link.priority = true
         XCTAssertEqual(try JSONDecoder().decode(JourneyLink.self, from: JSONEncoder().encode(link)), link)

@@ -36,7 +36,7 @@
     },
     {
       "path": "scripts/thesis_pro_mcp.py",
-      "sha256": "8cb3d415452df18dd687008997ffda4e48348a687c623d56bf867c67e1808ee7"
+      "sha256": "5e1293f60611dfd56508a5c030b175d189d4435ab0ca1817573f5457a8219a3c"
     },
     {
       "path": "skills/thesis-pro/SKILL.md",
@@ -56,7 +56,7 @@
     },
     {
       "path": "tests/test_thesis.py",
-      "sha256": "e73c6ae62d73baa2505ebd4249796da5a54bb0b0a625484f97e0473cf363db6f"
+      "sha256": "3d845eab7144cde91072fe161b8f949d42696b5f331783b107d37ae074d61e2c"
     }
   ]
 }

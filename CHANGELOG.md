@@ -10,3 +10,5 @@
 * Added portable reconciliation tests, including changed text and project isolation.
 
 The print manuscript is not part of the software release.
+* Source revisions invalidate linked passage review states.
+* Reference headings in English and Malay are excluded consistently from passage indexing.

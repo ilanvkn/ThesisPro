@@ -267,6 +267,11 @@ def tool_update_source(a):
     source.update(changes)
     source["updated_at"] = now()
     source.setdefault("history", []).append({"at": now(), "previous": previous})
+    if any(previous[k] != value for k, value in changes.items()):
+        for link in p.get("academic_journey", []):
+            if source["id"] in link.get("sourceIDs", []):
+                link["evidenceStatus"] = "needs_review"
+                link["reviewNotes"] = link.get("reviewNotes", "") + "\nSource updated; recheck passage support: " + source["id"]
     save_project(p)
     return {"message": "Source updated; verification remains a recorded assertion", "source": source}
 

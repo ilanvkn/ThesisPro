@@ -1,6 +1,6 @@
 # Local release checks, 10 November 2026
 
-* Plugin: 14 tests passed, including actual stdio discovery, changed revision rejection, history backup, source identity and project isolation.
+* Plugin: 15 tests passed, including actual stdio discovery, changed revision rejection, history backup, source identity and project isolation.
 * Native: six portable journey checks passed. Additional read-only checks against the author's two private libraries passed outside this public repository.
 * Swift release build completed on the development Mac. Bundle signature verification passed (ad-hoc development signing only).
 * Installed app launched with the ThesisPro name and read the existing library. The map visibly distinguished missing notes, stale anchors and review-pending records.

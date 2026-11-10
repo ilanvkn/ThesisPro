@@ -35,6 +35,16 @@ class ThesisTests(unittest.TestCase):
         self.assertTrue(Path(result["backup"]).exists())
         self.assertEqual(len(thesis.load_project(self.pid)["academic_journey"]), 1)
 
+    def test_source_change_invalidates_linked_passage_review(self):
+        source = thesis.tool_add_source({"project_id": self.pid, "citation": "Example (2020)", "verified": False})["source"]
+        p = thesis.load_project(self.pid)
+        p["academic_journey"] = [{"id": "passage", "sourceIDs": [source["id"]], "evidenceStatus": "reviewed_scope", "reviewNotes": "Old review"}]
+        thesis.save_project(p)
+        thesis.tool_update_source({"project_id": self.pid, "source_id": source["id"], "citation": "Corrected (2021)"})
+        link = thesis.load_project(self.pid)["academic_journey"][0]
+        self.assertEqual(link["evidenceStatus"], "needs_review")
+        self.assertIn("Old review", link["reviewNotes"])
+
     def test_budget_persistence_and_export(self):
         self.assertEqual(sum(c["target_words"] for c in self.project["chapters"]), 5000)
         thesis.tool_save_section({"project_id": self.pid, "chapter": 1, "section_title": "Proposal", "content": "Synthetic example only. No participants or results."})
