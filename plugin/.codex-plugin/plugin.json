@@ -1,0 +1,28 @@
+{
+  "name": "thesis-pro",
+  "version": "0.3.0",
+  "description": "A local-first academic workbench for planning, researching, drafting, auditing, and exporting long-form theses with Codex.",
+  "author": {
+    "name": "ilanvkn",
+    "url": "https://github.com/ilanvkn"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ThesisPro",
+    "shortDescription": "Build rigorous theses from a title.",
+    "developerName": "ThesisPro",
+    "category": "Education",
+    "capabilities": [
+      "Research",
+      "Write",
+      "Local project memory"
+    ],
+    "brandColor": "#4438CA",
+    "defaultPrompt": [
+      "Start a new thesis from my title.",
+      "Show my thesis dashboard and next task.",
+      "Audit my argument, evidence, and alignment."
+    ]
+  },
+  "mcpServers": "./.codex-plugin/mcp.json"
+}

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "thesis-pro": {
+      "command": "/bin/sh",
+      "args": [
+        "${PLUGIN_ROOT}/scripts/launch-mcp.sh"
+      ]
+    }
+  }
+}

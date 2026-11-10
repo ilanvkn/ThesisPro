@@ -1,0 +1,62 @@
+{
+  "name": "thesis-pro",
+  "version": "0.3.0",
+  "files": [
+    {
+      "path": ".codex-plugin/mcp.json",
+      "sha256": "ae8dfe699d657b28de88db91174038eec3b4bb8d43fd18ba0158868371b35b2b"
+    },
+    {
+      "path": ".codex-plugin/plugin.json",
+      "sha256": "22dd17ca2f8e1827dbe14377975778d51d66e8c04fd6e2bfcc76f6816eccc262"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "9f66c1712a255cf879a2b9e54dd197dc6678810a37f53cea217a18ae0e6b3ff2"
+    },
+    {
+      "path": "README.md",
+      "sha256": "df15e4c301b989a0e2f2b4023bd77e22a7c4971abdb34ecb5f749228804d79f7"
+    },
+    {
+      "path": "examples/synthetic-study.md",
+      "sha256": "a6a67a671696f78431092031380d49d4b132841db5d531603cea638953a7207e"
+    },
+    {
+      "path": "examples/worked-proposal.md",
+      "sha256": "523473910d1339790fcf094a60c74df8c47ddc69f7667aeddd53bec27ba0cbaf"
+    },
+    {
+      "path": "scripts/evidence_map.py",
+      "sha256": "42a15d2ee4a94d75ec654e773fc53a5dd3e357eb2dd6a3ca8a04d3e8d1309b10"
+    },
+    {
+      "path": "scripts/launch-mcp.sh",
+      "sha256": "795df73f9261244f302095ed24862d151345d66de46da2b5ddf09491b074b22d"
+    },
+    {
+      "path": "scripts/thesis_pro_mcp.py",
+      "sha256": "8cb3d415452df18dd687008997ffda4e48348a687c623d56bf867c67e1808ee7"
+    },
+    {
+      "path": "skills/thesis-pro/SKILL.md",
+      "sha256": "ef6672ea7ff3cca5760cb0c398b3d8366ada7f37193c91c88ac4cffb8032cfd3"
+    },
+    {
+      "path": "skills/thesis-pro/academic-operating-instructions.md",
+      "sha256": "5bb31c1b9135ebf90bd1429268de144021117f7004fb2abc80acfaa85de6c6ef"
+    },
+    {
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "tests/test_evidence_map.py",
+      "sha256": "6c19bb05e6bab8650359b7f5bef042b7f532c64987e069d04ace514b950a255b"
+    },
+    {
+      "path": "tests/test_thesis.py",
+      "sha256": "e73c6ae62d73baa2505ebd4249796da5a54bb0b0a625484f97e0473cf363db6f"
+    }
+  ]
+}
