@@ -50,3 +50,9 @@ Lead with the actual thesis page, section, decision, or audit result the user ca
 Use `reconcile_evidence_map` to preview current passage anchors. Apply only with the returned project hash. Preserve changed notes as history; never transfer approval from an old passage to a changed passage. Link a source with its inspected locator and support boundary. Keep source discovery, citation matching, reviewed claim support, author interpretation and observed local test results distinct. A nonempty note is not proof. Keep remaining review warnings visible. Preserve approved print artifacts unless an actual manuscript issue requires revision.
 
 ThesisPro is the public product name. Existing project IDs, `THESIS_PRO_HOME`, `~/Documents/ThesisPRO`, app preference keys and the `thesis-pro` tool namespace remain compatible. Never bundle private thesis text, identities or participant data into a software release. The host supplies model intelligence; MCP provides notebook operations, not automatic peer review.
+
+## Revision-bound review roles
+
+Use `start_review` to create a cycle tied to the current title, research design, chapters, sources and claims. Perform the returned evidence, methods, replication, critic, ethics and editor roles through the host. Record each actual review using `record_review`, with exact evidence locators, known source IDs, explicit limitations and a scoped decision. Check `get_review_status` for disagreement and missing roles. Changes to research make the cycle stale; start a new cycle without discarding old findings.
+
+These are AI-assisted roles, not named professors, independent human peer review or a publisher council. The tools store review work; they do not autonomously run a model or tests. Role completion never establishes academic approval, novelty, successful hypotheses or publication readiness.

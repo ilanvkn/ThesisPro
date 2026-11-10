@@ -1,6 +1,7 @@
 {
   "name": "thesis-pro",
   "version": "0.3.0",
+  "channel": "development snapshot; compatible review-tool additions",
   "files": [
     {
       "path": ".codex-plugin/mcp.json",
@@ -19,6 +20,10 @@
       "sha256": "df15e4c301b989a0e2f2b4023bd77e22a7c4971abdb34ecb5f749228804d79f7"
     },
     {
+      "path": "docs/REVIEW-ENGINE.md",
+      "sha256": "a16ce400c0a6125751d2dee0bc9484757d6a69f6b013da32c2de68b4471b260b"
+    },
+    {
       "path": "examples/synthetic-study.md",
       "sha256": "a6a67a671696f78431092031380d49d4b132841db5d531603cea638953a7207e"
     },
@@ -35,12 +40,16 @@
       "sha256": "795df73f9261244f302095ed24862d151345d66de46da2b5ddf09491b074b22d"
     },
     {
+      "path": "scripts/review_engine.py",
+      "sha256": "237284b64e8a51ab0907c1472eb4990633253002e1ad271b63493aa7c71a0282"
+    },
+    {
       "path": "scripts/thesis_pro_mcp.py",
-      "sha256": "5e1293f60611dfd56508a5c030b175d189d4435ab0ca1817573f5457a8219a3c"
+      "sha256": "9ac470acd0491e4c934efbf0809c9a79941f1423d5d058bef4054383bae1f0c2"
     },
     {
       "path": "skills/thesis-pro/SKILL.md",
-      "sha256": "ef6672ea7ff3cca5760cb0c398b3d8366ada7f37193c91c88ac4cffb8032cfd3"
+      "sha256": "05905fcca03837a061bd2b942bfe32c06e950e3bddd95cbcc6114f727af5081f"
     },
     {
       "path": "skills/thesis-pro/academic-operating-instructions.md",
@@ -55,8 +64,12 @@
       "sha256": "6c19bb05e6bab8650359b7f5bef042b7f532c64987e069d04ace514b950a255b"
     },
     {
+      "path": "tests/test_review_engine.py",
+      "sha256": "e6c8dc3ae1bdf5323fa040bdae4389508098aef7cf0b4076045141ff9d9e79de"
+    },
+    {
       "path": "tests/test_thesis.py",
-      "sha256": "3d845eab7144cde91072fe161b8f949d42696b5f331783b107d37ae074d61e2c"
+      "sha256": "c0eddb64eecab40e51e0b47fd266b616f4cfe79fbf63f2e0bb9056333e348dbc"
     }
   ]
 }

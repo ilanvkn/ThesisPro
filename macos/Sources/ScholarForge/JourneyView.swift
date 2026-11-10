@@ -18,21 +18,23 @@ struct JourneyView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("From insight to action").font(.system(size: 28, weight: .medium, design: .serif))
+                    Text("The evidence desk").font(.system(size: 28, weight: .medium, design: .serif))
                     Text("Concept → Passage → Evidence → Decision → Limitation").font(.callout).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button("Save journey", systemImage: "square.and.arrow.down") { store.persistJourney() }.buttonStyle(.borderedProminent)
                 Button("Export notes", systemImage: "square.and.arrow.up") { exporting = true }
             }
-            Text("Traceable working notes • Links are not proof. Filling every field is not academic approval.")
+            Text("Inspect the source, its support for the passage, and the limits of the conclusion.")
                 .font(.callout).padding(12).frame(maxWidth: .infinity, alignment: .leading)
                 .background(.orange.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
             HStack {
                 TextField("Find a concept, passage, source or decision", text: $query).textFieldStyle(.roundedBorder)
                 Toggle("Priority focus", isOn: $focusOnly).toggleStyle(.button)
-                Button("Index new passages", systemImage: "arrow.triangle.branch") { store.indexNewJourneyPassages() }
-                Button("Reconcile passages", systemImage: "arrow.triangle.2.circlepath") { store.reconcileJourneyPassages() }
+                Menu("Manage passages") {
+                    Button("Index new passages", systemImage: "arrow.triangle.branch") { store.indexNewJourneyPassages() }
+                    Button("Reconcile changed passages", systemImage: "arrow.triangle.2.circlepath") { store.reconcileJourneyPassages() }
+                }
             }
             HStack(spacing: 16) {
                 Label("\(store.journeyLinks.count) passage links", systemImage: "link")

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "title": "The ThesisPro research showcase",
+  "notice": "13 original research directions, 12 active topics. These are curated topic cards, not thirteen completed or published theses. Start a new personal paper without importing any private manuscript or result.",
+  "entries": [
+    {
+      "id": "human-ai-workplace",
+      "title": "Designing a Human–AI Hybrid Workplace: An Operating Systems Approach",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "Master's",
+      "summary": "Human judgement, bounded automation and business accountability.",
+      "question": "How can a workplace assign authority, evidence and responsibility across people and AI?",
+      "stage": "Research topic showcase",
+      "artwork": "covers/human-ai-workplace.png"
+    },
+    {
+      "id": "developmental-ai",
+      "title": "Developmental Artificial Intelligence: Adaptation with Auditable Evidence",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "Prediction complexity must earn its calibration and operating cost.",
+      "question": "When does adaptation improve on a simple recent-value baseline after all costs are counted?",
+      "stage": "Working research; independent validation pending",
+      "artwork": "covers/developmental-ai.png"
+    },
+    {
+      "id": "human-resources",
+      "title": "Human Resource Management",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "Master's",
+      "summary": "A foundation for examining workforce practices through explicit evidence.",
+      "question": "Which workforce practice has a measurable outcome and a credible comparison?",
+      "stage": "Research foundation",
+      "artwork": "covers/human-resources.png"
+    },
+    {
+      "id": "kernel-8",
+      "title": "Kernel 8: Deterministic Planning and Resource Hints",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "Resource-aware planning with inspectable decisions and bounded costs.",
+      "question": "When do resource hints change outcomes compared with a deterministic no-hint baseline?",
+      "stage": "Research foundation",
+      "artwork": "covers/kernel-8.png"
+    },
+    {
+      "id": "kernel-9",
+      "title": "Kernel 9: Adaptive Planning and Verifiable Governance",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "Adaptive recommendations constrained by explicit governance.",
+      "question": "Which adaptations earn their cost without weakening stated resource boundaries?",
+      "stage": "Research foundation",
+      "artwork": "covers/kernel-9.png"
+    },
+    {
+      "id": "porsche-marketing",
+      "title": "Marketing Management Analysis of Porsche AG",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "Master's",
+      "summary": "An independent strategy research topic, not a company endorsement.",
+      "question": "How do dated primary disclosures support or challenge an account of marketing strategy?",
+      "stage": "Research foundation",
+      "artwork": "covers/porsche-marketing.png"
+    },
+    {
+      "id": "organisational-behaviour",
+      "title": "Organizational Behaviour and Technology",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "Master's",
+      "summary": "Technology adoption examined alongside roles, incentives and behaviour.",
+      "question": "What explains observed adoption outcomes beyond the technology itself?",
+      "stage": "Research foundation",
+      "artwork": "covers/organisational-behaviour.png"
+    },
+    {
+      "id": "ruos",
+      "title": "RU’OS X Lava: A Native ARM Mobile Operating System",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "Versioned evidence for capability boundaries and recovery conditions.",
+      "question": "Which protection and recovery claims survive explicit failure tests on a pinned implementation?",
+      "stage": "Working research; broader qualification pending",
+      "artwork": "covers/ruos.png"
+    },
+    {
+      "id": "sabah-wellbeing",
+      "title": "Adolescent Wellbeing in Sabah",
+      "author": "",
+      "degree": "PhD",
+      "summary": "A topic-only example about family functioning, social support and resilience. No private study or participant records are distributed.",
+      "question": "How should family, support and resilience relationships be evaluated without overstating causal evidence?",
+      "stage": "Topic-only showcase; private manuscript excluded",
+      "artwork": "covers/sabah-wellbeing.png"
+    },
+    {
+      "id": "tamil-time-continuum",
+      "title": "Tamil Time Continuum: Scheduling and Deadline Tradeoffs",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "தமிழ் காலத் தொடர்ச்சி. Scheduling research with explicit timing and deadline boundaries.",
+      "question": "How do calibration history and workload horizon change scheduling tradeoffs?",
+      "stage": "Working research; application validation pending",
+      "artwork": "covers/tamil-time-continuum.png"
+    },
+    {
+      "id": "voike",
+      "title": "VOIKE: Optical Reliability and Bounded Operating Systems",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "Estimator reliability and proposed OS boundaries are distinct tracks; one does not validate the other.",
+      "question": "When does an estimator fail under correlated or contaminated observations, and what remains untested physically?",
+      "stage": "Computational research; optical validation pending",
+      "artwork": "covers/voike.png"
+    },
+    {
+      "id": "voike-os-archive",
+      "title": "VOIKE OS: Kernel Architecture and Bounded Services",
+      "author": "",
+      "degree": "PhD",
+      "summary": "A preserved conceptual track now grouped under VOIKE. This card does not assert authorship of recovered documents or a working implementation.",
+      "question": "Which service boundaries must be implemented and tested before architectural promises become evidence?",
+      "stage": "Archived track; merged into VOIKE",
+      "artwork": "covers/voike-os-archive.png",
+      "mergedInto": "voike"
+    },
+    {
+      "id": "zenios",
+      "title": "ZeniOS: Immutable Architecture and Governed Extensions",
+      "author": "Ilangkhumanan Thirunavokkarasu",
+      "degree": "PhD",
+      "summary": "A new research foundation around mutation and extension boundaries. Recovered-document authorship is not established by this card.",
+      "question": "What is immutable, who can authorise an extension, and how is recovery demonstrated?",
+      "stage": "Research foundation",
+      "artwork": "covers/zenios.png"
+    }
+  ]
+}

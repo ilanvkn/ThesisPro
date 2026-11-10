@@ -1,7 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-enum EditorMode: String, CaseIterable { case map = "Thesis map", journey = "Journey", preview = "Preview", write = "Write", reading = "Reading", presentation = "Presentation" }
+enum EditorMode: String, CaseIterable { case map = "Thesis map", journey = "Evidence", preview = "Manuscript", write = "Write", reading = "Read", presentation = "Present" }
 
 struct RootView: View {
     @Environment(ProjectStore.self) private var store
@@ -11,14 +11,26 @@ struct RootView: View {
     @Environment(\.openSettings) private var openSettings
     @State private var showingImporter = false
     @State private var showingExporter = false
-    @State private var showingBookshelf = true
+    @State private var showingBookshelf = false
+    @State private var showingShowcase = false
+    @State private var showingNewPaper = false
     @State private var pdfPreview: PDFPreviewPayload?
 
     var body: some View {
         @Bindable var store = store
+        HStack(spacing: 0) {
+            workspaceRail
+            Divider()
+            VStack(spacing: 0) {
+                workspaceHeader
+                Divider()
         Group {
         if mode == .reading {
             ThesisReadingView()
+        } else if mode == .journey {
+            JourneyView { index in
+                if store.manuscript.chapters.indices.contains(index) { store.selectedChapterID = store.manuscript.chapters[index].id; mode = .preview }
+            }
         } else if mode == .presentation || mode == .map {
             VStack(spacing: 0) {
                 thesisPROProjectPicker.padding(.top, 12)
@@ -44,10 +56,13 @@ struct RootView: View {
         }
         }
         }
+            }
+        }
+        .frame(minWidth: 1100, minHeight: 720)
         .onExitCommand { mode = .map }
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Picker("Workspace", selection: $mode) { ForEach(EditorMode.allCases, id: \.self) { Text($0.rawValue) } }.pickerStyle(.menu).frame(width: 175)
+                Label("ThesisPro", systemImage: "books.vertical").font(.headline)
             }
             ToolbarItemGroup(placement: .primaryAction) {
                 Button("Workspace preferences", systemImage: "slider.horizontal.3") { openSettings() }
@@ -58,10 +73,12 @@ struct RootView: View {
                         Text("Follow system").tag("System")
                     }
                 }
+                Button("New paper", systemImage: "plus") { showingNewPaper = true }
+                Button("Showcase", systemImage: "sparkles.rectangle.stack") { showingShowcase = true }
                 Button("Bookshelf", systemImage: "books.vertical") { store.refreshThesisPROProjects(); showingBookshelf = true }
                 Button("Refresh ThesisPro", systemImage: "arrow.clockwise") { store.refreshThesisPROProjects() }.help("Find projects created from Codex or ChatGPT")
                 Button("Import Sources", systemImage: "doc.badge.plus") { showingImporter = true }.help("Import research documents")
-                Button("Copy Chapter", systemImage: "doc.on.doc") { store.copySelectedChapter() }.help("Copy the visible chapter")
+
                 Menu("Saved editions", systemImage: "books.vertical.fill") {
                     ForEach(store.journeyEditions) { edition in
                         Button(edition.title) {
@@ -79,9 +96,12 @@ struct RootView: View {
             }
         }
         .task {
-            showingBookshelf = UserDefaults.standard.object(forKey: "thesisplus.showLibraryAtLaunch") as? Bool ?? true
-            await Task.yield()
             store.refreshThesisPROProjects(selectNewest: store.activeThesisPROProjectID == nil)
+            while store.isRefreshingLibrary && !Task.isCancelled {
+                do { try await Task.sleep(for: .milliseconds(50)) } catch { return }
+            }
+            if store.thesisPROProjects.isEmpty { showingShowcase = true }
+            else { showingBookshelf = UserDefaults.standard.object(forKey: "thesisplus.showLibraryAtLaunch") as? Bool ?? true }
             while !Task.isCancelled {
                 do { try await Task.sleep(for: .seconds(3)) } catch { return }
                 store.refreshThesisPROProjects()
@@ -91,6 +111,12 @@ struct RootView: View {
             ThesisBookshelf { destination in
                 switch destination { case .reading: mode = .reading; case .map: mode = .map; case .journey: mode = .journey }
             }.environment(store)
+        }
+        .sheet(isPresented: $showingShowcase) {
+            PublicShowcaseView { mode = .preview }.environment(store)
+        }
+        .sheet(isPresented: $showingNewPaper) {
+            NewPaperView { showingNewPaper = false; mode = .preview }.environment(store)
         }
         .sheet(item: $pdfPreview) { preview in
             ThesisPDFSheet(data: preview.data, title: preview.title)
@@ -104,6 +130,63 @@ struct RootView: View {
         .alert("ThesisPro", isPresented: Binding(get: { store.importMessage != nil }, set: { if !$0 { store.importMessage = nil } })) {
             Button("OK") { store.importMessage = nil }
         } message: { Text(store.importMessage ?? "") }
+    }
+
+    private func modeSymbol(_ item: EditorMode) -> String {
+        switch item {
+        case .map: return "point.3.connected.trianglepath.dotted"
+        case .journey: return "checkmark.shield"
+        case .preview: return "doc.text"
+        case .write: return "square.and.pencil"
+        case .reading: return "book.pages"
+        case .presentation: return "play.rectangle"
+        }
+    }
+
+    private var workspaceRail: some View {
+        VStack(spacing: 12) {
+            Button { store.refreshThesisPROProjects(); showingBookshelf = true } label: {
+                VStack(spacing: 6) {
+                    Image(systemName: "books.vertical.fill").font(.title2)
+                    Text("Library").font(.caption2.weight(.semibold))
+                }.frame(width: 74, height: 62)
+            }.buttonStyle(.plain).help("Open your research library")
+            Divider().padding(.horizontal, 16)
+            ForEach(EditorMode.allCases, id: \.self) { item in
+                Button { mode = item } label: {
+                    VStack(spacing: 7) {
+                        Image(systemName: modeSymbol(item)).font(.system(size: 19, weight: .medium))
+                        Text(item == .map ? "Overview" : item.rawValue).font(.caption2.weight(.medium))
+                    }.frame(width: 74, height: 60)
+                        .foregroundStyle(mode == item ? Color.accentColor : Color.secondary)
+                        .background(mode == item ? Color.accentColor.opacity(0.13) : .clear, in: RoundedRectangle(cornerRadius: 13))
+                }.buttonStyle(.plain).help(item.rawValue)
+                    .accessibilityValue(mode == item ? "Current workspace" : "")
+            }
+            Spacer(minLength: 18)
+            Button { openSettings() } label: { Image(systemName: "slider.horizontal.3").font(.title3).frame(width: 70, height: 44) }
+                .buttonStyle(.plain).help("Workspace preferences").accessibilityLabel("Workspace preferences")
+            Text("V2").font(.caption2.monospaced()).foregroundStyle(.secondary)
+        }.padding(.vertical, 16).padding(.horizontal, 8).frame(width: 90).background(.bar)
+    }
+
+    private var workspaceHeader: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(mode == .map ? "Research overview" : mode.rawValue).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(store.manuscript.title).font(.system(size: 18, weight: .medium, design: .serif)).lineLimit(1).help(store.manuscript.title)
+            }
+            Spacer(minLength: 12)
+            Label(store.activeThesisPROProjectID == nil ? "Choose or create a paper" : store.hasUnsavedChanges ? "Unsaved changes" : "Saved locally", systemImage: store.hasUnsavedChanges ? "circle.fill" : "checkmark.circle")
+                .font(.caption).foregroundStyle(store.hasUnsavedChanges ? Color.orange : Color.secondary)
+            if mode == .journey || mode == .map {
+                Button { mode = .journey } label: {
+                    Text("\(store.journeyLinks.filter { $0.evidenceReviewPending }.count) to review")
+                        .font(.caption.weight(.semibold)).padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(Color.accentColor.opacity(0.10), in: Capsule())
+                }.buttonStyle(.plain).help("Passage records needing a scoped evidence review")
+            }
+        }.padding(.horizontal, 24).padding(.vertical, 16).background(.background)
     }
 
     private var thesisPROProjectPicker: some View {
@@ -166,7 +249,7 @@ struct RootView: View {
                         .scrollContentBackground(.hidden).background(Color(nsColor: .textBackgroundColor))
                 } else {
                     ScrollView {
-                        TypesetChapter(text: store.manuscript.chapters[index].content)
+                        TypesetChapter(text: store.selectedTypesetContent)
                             .frame(maxWidth: 690, alignment: .leading).padding(.horizontal, 64).padding(.vertical, 48)
                             .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 3))
                             .shadow(color: .black.opacity(0.12), radius: 12, y: 3).padding(32)
@@ -179,7 +262,7 @@ struct RootView: View {
     private func chapterHeader(index: Int) -> some View {
         let chapter = store.manuscript.chapters[index]
         return HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 3) { Text(chapter.title).font(.title2.bold()); Text(store.hasUnsavedChanges ? "Unsaved edits — save before switching projects" : "Shared ThesisPRO manuscript · local copy").font(.caption).foregroundStyle(.secondary) }
+            VStack(alignment: .leading, spacing: 3) { Text(chapter.title).font(.title2.bold()); Text(store.hasUnsavedChanges ? "Unsaved edits — save before switching projects" : "Saved manuscript on this Mac").font(.caption).foregroundStyle(.secondary) }
             Spacer(); Text("\(chapter.wordCount.formatted()) words").font(.callout.monospacedDigit()).foregroundStyle(.secondary)
         }.padding(.horizontal, 24).padding(.vertical, 14).background(.bar)
     }
@@ -211,10 +294,10 @@ struct ThesisInspector: View {
     }
     var guidance: [String] {
         let title = store.selectedChapter?.title ?? ""
-        if store.activeThesisPROProjectID?.contains("human-ai") == true {
+        if store.manuscript.degree.localizedCaseInsensitiveContains("master") {
             return ["Distinguish proposed design principles from verified findings.", "Compare the argument with specific sources and contrary evidence.", "Record assumptions, test conditions, and observed results.", "State what the evidence establishes and what remains unresolved."]
         }
-        if title.contains("Chapter 5") { return ["State the novelty and contribution.", "Explain why the mediation pattern may occur in Sabah.", "Connect claims to evidence on parenting and community support.", "Specify a family-based JPNS intervention.", "Separate findings, interpretation, and recommendations."] }
+        if title.contains("Chapter 5") { return ["Explain the contribution supported by the tests.", "Compare with the strongest relevant baseline.", "Report failures, costs and remaining unknowns.", "Separate measured results from proposed applications."] }
         if title.contains("Chapter 4") { return ["Report results without explaining why they occurred.", "Match every number to the statistical output.", "Include effect sizes and confidence intervals.", "Use tables only where comparison helps."] }
         if title.contains("Chapter 3") { return ["Make the design reproducible.", "Explain sampling and inclusion criteria.", "Document measures, validity, ethics, and analysis choices."] }
         if title.contains("Chapter 2") { return ["Synthesize studies by argument, not author-by-author.", "Identify disagreement and the precise research gap.", "Connect the literature to the conceptual model."] }

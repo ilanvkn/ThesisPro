@@ -22,6 +22,11 @@ struct ThesisMapView: View {
                     Text("\(store.manuscript.degree) • \(store.manuscript.draftWords.formatted()) main-text words • \(chapters.count) mapped chapters").foregroundStyle(.secondary)
                 }
                 if !presentation {
+                    HStack(spacing: 12) {
+                        overviewMetric("Manuscript", value: store.manuscript.draftWords.formatted(), caption: "main-text words", icon: "doc.text")
+                        overviewMetric("Evidence", value: store.journeyLinks.count.formatted(), caption: "indexed passages", icon: "link")
+                        overviewMetric("Review", value: store.journeyLinks.filter { $0.evidenceReviewPending }.count.formatted(), caption: "records to inspect", icon: "text.magnifyingglass")
+                    }
                     if let layer = store.languageLayer { LanguageLayerCard(layer: layer) }
                     ContinueWorkCard(read: { if let index = store.selectedChapterIndex { openChapter(index) } }, review: openJourney)
                 }
@@ -60,9 +65,19 @@ struct ThesisMapView: View {
                 insights
             }.padding(presentation ? 40 : 24).frame(maxWidth: presentation ? 1250 : 1000)
                 .frame(maxWidth: .infinity)
-        }.background(Color.accentColor.opacity(0.045))
+        }.background(Color(nsColor: .windowBackgroundColor))
             .animation(WorkspaceMotion.animation(motion, reduce: reduceMotion), value: selected)
             .onChange(of: store.activeThesisPROProjectID) { selected = nil }
+    }
+
+    private func overviewMetric(_ title: String, value: String, caption: String, icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Label(title, systemImage: icon).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text(value).font(.system(size: 27, weight: .medium, design: .rounded)).monospacedDigit()
+            Text(caption).font(.caption).foregroundStyle(.secondary)
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(18)
+            .background(.background, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.secondary.opacity(0.12)))
     }
 
     private var network: some View {
@@ -123,6 +138,10 @@ struct ThesisReadingView: View {
     @AppStorage("thesisplus.readingFont") private var typeface = "Serif"
     @AppStorage("thesisplus.warmPaper") private var warm = false
     @Environment(\.colorScheme) private var scheme
+    private func moveChapter(_ delta: Int) {
+        let next = (store.selectedChapterIndex ?? 0) + delta
+        if store.manuscript.chapters.indices.contains(next) { store.selectedChapterID = store.manuscript.chapters[next].id }
+    }
     private var design: Font.Design { typeface == "Monospaced" ? .monospaced : typeface == "Sans serif" ? .default : .serif }
     var body: some View {
         VStack(spacing: 0) {
@@ -132,6 +151,9 @@ struct ThesisReadingView: View {
                     ForEach(store.manuscript.chapters) { Text($0.title).tag(Optional($0.id)) }
                 }.frame(maxWidth: 500)
                 Spacer()
+                Button { moveChapter(-1) } label: { Image(systemName: "chevron.left") }.disabled((store.selectedChapterIndex ?? 0) == 0).help("Previous chapter").accessibilityLabel("Previous chapter")
+                Text("\((store.selectedChapterIndex ?? 0) + 1) / \(store.manuscript.chapters.count)").font(.caption.monospacedDigit())
+                Button { moveChapter(1) } label: { Image(systemName: "chevron.right") }.disabled((store.selectedChapterIndex ?? 0) >= store.manuscript.chapters.count - 1).help("Next chapter").accessibilityLabel("Next chapter")
                 Text("Text size").font(.caption)
                 Slider(value: $size, in: 15...28, step: 1).frame(width: 140).accessibilityLabel("Reading text size")
             }.padding(18).background(.bar)
@@ -139,7 +161,7 @@ struct ThesisReadingView: View {
                 VStack(alignment: .leading, spacing: 28) {
                     Text(store.manuscript.title).font(.caption).foregroundStyle(.secondary)
                     Text(store.selectedChapter?.title ?? "Choose a chapter").font(.system(size: size + 10, weight: .medium, design: design))
-                    TypesetChapter(text: store.selectedChapter?.content ?? "", bodySize: size, typeface: design, pageWidth: width)
+                    TypesetChapter(text: store.selectedTypesetContent, bodySize: size, typeface: design, pageWidth: width)
                 }.frame(maxWidth: width, alignment: .leading).padding(50).frame(maxWidth: .infinity)
             }.background(warm ? (scheme == .dark ? Color(red: 0.16, green: 0.14, blue: 0.11) : Color(red: 0.98, green: 0.95, blue: 0.88)) : Color.accentColor.opacity(0.025))
         }

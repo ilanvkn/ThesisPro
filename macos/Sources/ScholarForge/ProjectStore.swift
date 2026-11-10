@@ -32,6 +32,13 @@ final class ProjectStore {
     var hasJourneyEdits: Bool { journeyLinks != loadedJourneyLinks }
     private var loadedProjectData: Data?
     private var loadedChapterText: [String] = []
+    private var displayChapterText: [String] = []
+    var selectedTypesetContent: String {
+        guard let index = selectedChapterIndex else { return "" }
+        let current = manuscript.chapters[index].content
+        guard loadedChapterText.indices.contains(index), displayChapterText.indices.contains(index), current == loadedChapterText[index] else { return current }
+        return displayChapterText[index]
+    }
     var hasUnsavedChanges: Bool { activeThesisPROProjectID != nil && (manuscript.chapters.map(\.content) != loadedChapterText || hasJourneyEdits) }
 
     func reloadExternalManuscript() {
@@ -76,6 +83,19 @@ final class ProjectStore {
         } catch { importMessage = "Could not save: \(error.localizedDescription)" }
     }
 
+    /// Explicit creation writes a new UUID folder only; catalogue entries never become user manuscripts automatically.
+    func createPersonalPaper(title: String, author: String, degree: String, targetWords: Int, question: String) throws {
+        guard !hasUnsavedChanges else { throw PaperCreationError.unsavedChanges }
+        let id = try PersonalPaperDraft(title: title, author: author, degree: degree, targetWords: targetWords, question: question).create(in: thesisPRORoot)
+        Task {
+            while isRefreshingLibrary {
+                do { try await Task.sleep(for: .milliseconds(50)) } catch { return }
+            }
+            UserDefaults.standard.set(id, forKey: "thesisplus.lastProject")
+            refreshThesisPROProjects(selectNewest: true)
+        }
+    }
+
     private var thesisPRORoot: URL {
         FileManager.default.homeDirectoryForCurrentUser
             .appending(path: "Documents/ThesisPRO", directoryHint: .isDirectory)
@@ -112,6 +132,12 @@ final class ProjectStore {
             options: [.skipsHiddenFiles]
         )) ?? []
         let refreshed: [ThesisPROProjectSummary] = files.compactMap { folder in
+            // Retain original projects on disk while presenting their canonical merged project.
+            let statusFile = folder.appending(path: "library-status.json")
+            if let statusData = try? Data(contentsOf: statusFile),
+               let status = try? JSONSerialization.jsonObject(with: statusData) as? [String: String],
+               let canonical = status["merged_into"],
+               FileManager.default.fileExists(atPath: root.appending(path: canonical).appending(path: "project.json").path) { return nil }
             let file = folder.appending(path: "project.json")
             guard let data = try? Data(contentsOf: file),
                   let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -151,6 +177,18 @@ final class ProjectStore {
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let rawChapters = object["chapters"] as? [[String: Any]] else { return }
 
+        displayChapterText = rawChapters.map { raw in
+            let sections = raw["sections"] as? [String: [String: Any]] ?? [:]
+            return sections.keys.sorted { $0.compare($1, options: .numeric) == .orderedAscending }.compactMap { key -> String? in
+                guard let text = sections[key]?["content"] as? String, !text.isEmpty else { return nil }
+                if key == "Mac application draft" || key == "Recovered working draft" { return text }
+                let parts = text.components(separatedBy: "\n")
+                let first = (parts.first ?? "").trimmingCharacters(in: CharacterSet(charactersIn: "# "))
+                let duplicate = first == key || key.hasSuffix(first) && !first.isEmpty
+                let body = duplicate ? parts.dropFirst().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines) : text
+                return "## " + key + "\n\n" + body
+            }.joined(separator: "\n\n")
+        }
         let chapters = rawChapters.compactMap { raw -> ManuscriptChapter? in
             guard let number = raw["number"] as? Int,
                   let title = raw["title"] as? String else { return nil }

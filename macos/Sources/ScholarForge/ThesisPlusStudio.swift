@@ -10,17 +10,21 @@ struct TypesetChapter: View {
     var bodySize: Double = 16
     var typeface: Font.Design = .serif
     var pageWidth: Double = 660
-    private var blocks: [String] { text.components(separatedBy: "\n\n").filter { !$0.isEmpty } }
+    private var blocks: [String] { text.components(separatedBy: "\n\n").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty } }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
                 if let figure = ManuscriptFigure(block) {
                     ManuscriptFigureView(figure: figure)
+                } else if block.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("|") && block.contains("---") {
+                    ResearchTable(block: block)
+                } else if let image = LocalResearchImage.path(from: block) {
+                    LocalResearchImage(url: image, caption: LocalResearchImage.caption(from: block))
                 } else if block.hasPrefix("#") || (block.count < 170 && block.range(of: #"^\d+\.\d+\s"#, options: .regularExpression) != nil && !block.contains("\n")) {
                     Text(block.trimmingCharacters(in: CharacterSet(charactersIn: "# ")))
                         .font(.system(size: bodySize + 5, weight: .semibold, design: typeface)).padding(.top, 12)
                 } else {
-                    Text(block).font(.system(size: bodySize, design: typeface)).lineSpacing(bodySize * 0.44)
+                    Text((try? AttributedString(markdown: block, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(block)).font(.system(size: bodySize, design: typeface)).lineSpacing(bodySize * 0.44)
                 }
             }
         }.textSelection(.enabled).frame(maxWidth: pageWidth, alignment: .leading)

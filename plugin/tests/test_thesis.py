@@ -45,6 +45,42 @@ class ThesisTests(unittest.TestCase):
         self.assertEqual(link["evidenceStatus"], "needs_review")
         self.assertIn("Old review", link["reviewNotes"])
 
+    def test_sixth_discussion_and_seventh_references(self):
+        p = thesis.load_project(self.pid)
+        p["chapters"] = [
+            {"number": 6, "title": "Discussion and Conclusion", "target_words": 5000,
+             "sections": {"Discussion": {"content": "Three substantive words"}}},
+            {"number": 7, "title": "References", "target_words": 0,
+             "sections": {"Bibliography": {"content": "Two references"}}},
+        ]
+        thesis.save_project(p)
+        d = thesis.tool_dashboard({"project_id": self.pid})
+        self.assertEqual(d["words"], 3)
+        self.assertEqual(d["reference_words"], 2)
+        self.assertEqual(d["total_section_words"], 5)
+        self.assertIsNone(d["budget_note"])
+        self.assertEqual(thesis.tool_export({"project_id": self.pid})["main_text_words"], 3)
+
+    def test_legacy_missing_discipline_is_readable_without_mutation(self):
+        p = thesis.load_project(self.pid)
+        del p["discipline"]
+        thesis.save_project(p)
+        path = thesis.project_path(self.pid)
+        before = path.read_bytes()
+        self.assertEqual(thesis.tool_dashboard({"project_id": self.pid})["discipline"], "")
+        thesis.tool_export({"project_id": self.pid})
+        self.assertEqual(path.read_bytes(), before)
+
+    def test_back_matter_roles_and_multilingual_headings(self):
+        for title in ("Chapter 7: References", "BAB VI: RUJUKAN", "Appendix A: Protocol", "Lampiran A", "Bibliography"):
+            with self.subTest(title=title):
+                self.assertTrue(thesis.is_back_matter({"number": 99, "title": title}))
+        for title in ("Discussion", "References to prior work in the discussion"):
+            # Explicit body classification can override an ambiguous title.
+            self.assertFalse(thesis.is_back_matter({"number": 6, "title": title, "role": "main_text"}))
+        self.assertFalse(thesis.is_back_matter({"number": 6, "title": "Conclusion"}))
+        self.assertTrue(thesis.is_back_matter({"number": 1, "title": "Supporting records", "role": "appendix"}))
+
     def test_budget_persistence_and_export(self):
         self.assertEqual(sum(c["target_words"] for c in self.project["chapters"]), 5000)
         thesis.tool_save_section({"project_id": self.pid, "chapter": 1, "section_title": "Proposal", "content": "Synthetic example only. No participants or results."})
@@ -92,6 +128,18 @@ class ThesisTests(unittest.TestCase):
         thesis.tool_add_claim({"project_id": self.pid, "claim": "Illustrative claim", "source_ids": [source["id"]]})
         self.assertIn("sources", [x["area"] for x in thesis.tool_audit({"project_id": self.pid})["issues"]])
 
+    def test_review_tools_persist_findings_and_reject_stale_revisions(self):
+        started = thesis.handle({"method": "tools/call", "params": {"name": "start_review", "arguments": {"project_id": self.pid, "scope": "Fixture protocol"}}})["structuredContent"]
+        rid = started["review"]["id"]
+        report = {"summary": "No executed experiment supplied", "findings": [{"claim": "A measured benefit", "decision": "insufficient_evidence", "evidence": "No run receipt in fixture", "limitations": "Cannot infer a benefit", "source_ids": []}]}
+        thesis.tool_record_review({"project_id": self.pid, "review_id": rid, "role": "replication", "report": report})
+        status = thesis.tool_review_status({"project_id": self.pid, "review_id": rid})
+        self.assertEqual(len(status["unresolved_findings"]), 1)
+        self.assertFalse(status["academic_approval"])
+        thesis.tool_save_section({"project_id": self.pid, "chapter": 1, "section_title": "Changed", "content": "A revised fixture."})
+        with self.assertRaises(ValueError):
+            thesis.tool_record_review({"project_id": self.pid, "review_id": rid, "role": "editor", "report": report})
+
     def test_argument_types(self):
         for name, args in (("add_source", {"project_id": self.pid, "citation": "Fixture", "verified": "false"}), ("create_project", {"title": "Fixture", "target_words": True})):
             with self.assertRaises(ValueError):
@@ -103,7 +151,7 @@ class ThesisTests(unittest.TestCase):
         run = subprocess.run([sys.executable, str(SERVER)], input="\n".join(map(json.dumps, requests)) + "\n", text=True, capture_output=True, env=env, timeout=10, check=True)
         replies = [json.loads(line) for line in run.stdout.splitlines()]
         self.assertEqual(replies[0]["result"]["serverInfo"]["version"], "0.3.0")
-        self.assertEqual(len(replies[1]["result"]["tools"]), 13)
+        self.assertEqual(len(replies[1]["result"]["tools"]), 16)
         self.assertEqual(replies[2]["result"]["structuredContent"]["projects"], [])
 
     def test_source_and_claim_corrections_resolve_audit(self):

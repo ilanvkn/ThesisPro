@@ -18,6 +18,10 @@ _map_spec = importlib.util.spec_from_file_location('thesis_evidence_map', Path(_
 evidence_map = importlib.util.module_from_spec(_map_spec)
 _map_spec.loader.exec_module(evidence_map)
 
+_review_spec = importlib.util.spec_from_file_location('thesis_review_engine', Path(__file__).with_name('review_engine.py'))
+review_engine = importlib.util.module_from_spec(_review_spec)
+_review_spec.loader.exec_module(review_engine)
+
 
 def tool_reconcile_map(a):
     path = project_path(a['project_id'])
@@ -150,12 +154,28 @@ def tool_list(_a):
     return {"projects": sorted(projects, key=lambda x: x.get("updated_at", ""), reverse=True)}
 
 
+def is_back_matter(chapter):
+    """Classify content by explicit role or heading, never chapter number.
+
+    Unknown headings remain main text. reference_words retains its legacy
+    meaning of references plus appendices; back_matter_words makes that explicit.
+    """
+    role = str(chapter.get("role", "")).strip().lower().replace("-", "_")
+    if role in {"main", "main_text", "body"}:
+        return False
+    if role in {"references", "bibliography", "appendix", "appendices", "back_matter"}:
+        return True
+    title = str(chapter.get("title", "")).strip()
+    title = re.sub(r"^(?:chapter|bab)\s+(?:\d+|[ivxlcdm]+)\s*[:.\-]?\s*", "", title, flags=re.I)
+    return bool(re.match(r"^(?:references?|bibliography|bibliografi|rujukan|appendix|appendices|lampiran)\b", title, flags=re.I))
+
+
 def tool_dashboard(a):
     p = load_project(a["project_id"])
     chapter_rows, total, reference_words = [], 0, 0
     for ch in p["chapters"]:
         actual = sum(words(v.get("content", "")) for v in ch.get("sections", {}).values())
-        if ch["number"] == 6:
+        if is_back_matter(ch):
             reference_words += actual
         else:
             total += actual
@@ -164,11 +184,12 @@ def tool_dashboard(a):
                              "sections": list(ch.get("sections", {}).keys())})
     unsupported = [c for c in p["claims"] if not c.get("source_ids")]
     return {"id": p["id"], "title": p["title"], "degree": p["degree"],
-            "discipline": p["discipline"], "status": p["status"],
+            "discipline": p.get("discipline", ""), "status": p["status"],
             "words": total, "reference_words": reference_words, "total_section_words": total + reference_words,
-            "word_count_method": "regex section words; chapter6 references/appendices excluded from main text",
+            "back_matter_words": reference_words,
+            "word_count_method": "regex section words; explicit role or heading identifies references/appendices; no chapter-number assumption",
             "target_words": p["target_words"], "chapters": chapter_rows,
-            "budget_note": "Existing budgets are preserved; review if main-text targets differ" if sum(c["target_words"] for c in p["chapters"] if c["number"] != 6) != p["target_words"] else None,
+            "budget_note": "Existing budgets are preserved; review if main-text targets differ" if sum(c["target_words"] for c in p["chapters"] if not is_back_matter(c)) != p["target_words"] else None,
             "source_count": len(p["sources"]), "claim_count": len(p["claims"]),
             "unsupported_claims": len(unsupported), "research_design": p["research_design"],
             "next_action": next_action(p, total)}
@@ -343,7 +364,28 @@ def tool_export(a):
     return {"message": "Markdown manuscript exported", "path": str(out), "word_count": words("\n".join(lines)), "main_text_words": counts["words"], "reference_words": counts["reference_words"], "total_section_words": counts["total_section_words"]}
 
 
+def tool_start_review(a):
+    p = load_project(a['project_id'])
+    result = review_engine.start(p, a.get('scope', 'Current manuscript, evidence and methods'), now())
+    save_project(p)
+    return result
+
+
+def tool_record_review(a):
+    p = load_project(a['project_id'])
+    result = review_engine.record(p, a['review_id'], a['role'], a['report'], now())
+    save_project(p)
+    return result
+
+
+def tool_review_status(a):
+    return review_engine.status(load_project(a['project_id']), a['review_id'])
+
+
 TOOLS = {
+    "start_review": (tool_start_review, {"title": "Start an academic review cycle", "description": "Create six revision-bound AI-assisted review roles for the host to perform. Does not execute inference or certify research.", "inputSchema": {"type": "object", "properties": {"project_id": {"type": "string"}, "scope": {"type": "string"}}, "required": ["project_id"]}}),
+    "record_review": (tool_record_review, {"title": "Record a scoped reviewer finding", "description": "Save host-performed review findings with evidence locators, limits and valid source IDs. Changed research revisions reject stale reviews; previous reports are preserved.", "inputSchema": {"type": "object", "properties": {"project_id": {"type": "string"}, "review_id": {"type": "string"}, "role": {"type": "string"}, "report": {"type": "object"}}, "required": ["project_id", "review_id", "role", "report"]}}),
+    "get_review_status": (tool_review_status, {"title": "Inspect review coverage and disagreements", "description": "Show missing roles, revision staleness and unresolved findings without converting role completion into academic approval.", "inputSchema": {"type": "object", "properties": {"project_id": {"type": "string"}, "review_id": {"type": "string"}}, "required": ["project_id", "review_id"]}}),
     "reconcile_evidence_map": (tool_reconcile_map, {"title": "Reconcile evidence map", "description": "Preview literal passage reconciliation. Apply requires the preview project hash. Changed notes are archived, not silently attached to new claims. Manuscript and PDF are unchanged.", "inputSchema": {"type": "object", "properties": {"project_id": {"type": "string"}, "apply": {"type": "boolean"}, "expected_sha256": {"type": "string"}}, "required": ["project_id"]}}),
     "update_source": (tool_update_source, {"title": "Correct and verify a source", "description": "Update an existing source with a checked citation, recorded verification notes and retained history. Changed citation/URL invalidates the prior verification flag unless explicitly reverified.", "inputSchema": {"type": "object", "properties": {"project_id": {"type": "string"}, "source_id": {"type": "string"}, "citation": {"type": "string"}, "url_or_doi": {"type": "string"}, "type": {"type": "string"}, "verified": {"type": "boolean"}, "notes": {"type": "string"}}, "required": ["project_id", "source_id"]}}),
     "update_claim": (tool_update_claim, {"title": "Correct a claim and its evidence links", "description": "Update an existing claim, validate source IDs and retain previous values.", "inputSchema": {"type": "object", "properties": {"project_id": {"type": "string"}, "claim_id": {"type": "string"}, "text": {"type": "string"}, "source_ids": {"type": "array", "items": {"type": "string"}}, "location": {"type": "string"}, "kind": {"type": "string", "enum": ["external", "interpretation", "original contribution"]}}, "required": ["project_id", "claim_id"]}}),
