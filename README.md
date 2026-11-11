@@ -48,7 +48,7 @@ The engine does not run a model by itself, employ professors, produce independen
 Requires macOS 15 or later and Swift 6 tools for the native app.
 
 ```sh
-git clone https://github.com/ilanvkn/ThesisPro.git
+git clone https://github.com/starkfiber/ThesisPro.git
 cd ThesisPro
 zsh macos/scripts/test-journey.sh
 zsh macos/scripts/build-app.sh
